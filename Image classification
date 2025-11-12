@@ -1,0 +1,59 @@
+# IMPORTING REQUIRED PACKAGES
+import tensorflow as tf
+from keras.datasets import mnist
+from keras.models import Sequential
+from keras.layers import Conv2D, Dropout, Flatten, Dense, MaxPooling2D
+import matplotlib.pyplot as plt
+import numpy as np
+
+# a. LOADING AND PRE-PROCESSING THE IMAGE DATA
+(x_train, y_train), (x_test, y_test) = mnist.load_data()  # Splitting into training and test data
+
+input_shape = (28, 28, 1)
+
+# Reshaping and converting to float
+x_train = x_train.reshape(x_train.shape[0], 28, 28, 1)
+x_test = x_test.reshape(x_test.shape[0], 28, 28, 1)
+print("Data type of training:", x_train.dtype)
+
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+print("Data type after converting to float:", x_train.dtype)
+
+# Normalizing the pixel values
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+
+print("Shape of training:", x_train.shape)
+print("Shape of testing:", x_test.shape)
+
+# b. DEFINING THE MODEL’S ARCHITECTURE
+model = Sequential()
+model.add(Conv2D(28, kernel_size=(3, 3), input_shape=input_shape, activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Flatten())
+model.add(Dense(200, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(10, activation='softmax'))
+
+model.summary()
+
+# c. TRAINING THE MODEL
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, epochs=2)
+
+# d. ESTIMATING THE MODEL’S PERFORMANCE
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print("Test Loss:", test_loss)
+print("Accuracy:", test_acc)
+
+# SHOWING IMAGE FROM DATASET
+i = 0
+image = x_train[i]
+plt.imshow(np.squeeze(image), cmap='gray')
+plt.show()
+
+# PREDICTING THE CLASS OF IMAGE
+image = image.reshape(1, image.shape[0], image.shape[1], image.shape[2])
+predict_model = model.predict(image)
+print("Predicted class:", np.argmax(predict_model))
